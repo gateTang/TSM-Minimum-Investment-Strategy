@@ -96,18 +96,18 @@ percentageDict = dict(zip(stockListCombinations, percentageList))
 print("Best combination is: "+ str(sharpeDict[maxRatio]) +  " " + str(percentageDict[sharpeDict[maxRatio]]))
 print("Worst combination is: "+ str(sharpeDict[minRatio]) +  " " + str(percentageDict[sharpeDict[minRatio]]))
 
-plt.grid()
-plt.title('Minimum Variance Frontier ' + str(stockList))
-plt.xlabel('Standard Deviation/Risk (%)', fontsize=11)
-plt.ylabel('Daily Return (%)', fontsize=11)
-plt.plot(portfolioStdDev(stockCombinations[q][0], stockCombinations[q][1], correlation), portfolioExpReturn(stockCombinations[q][0], stockCombinations[q][1]))
+#plt.grid()
+#plt.title('Minimum Variance Frontier ' + str(stockList))
+#plt.xlabel('Standard Deviation/Risk (%)', fontsize=11)
+#plt.ylabel('Daily Return (%)', fontsize=11)
+#plt.plot(portfolioStdDev(stockCombinations[q][0], stockCombinations[q][1], correlation), portfolioExpReturn(stockCombinations[q][0], stockCombinations[q][1]))
 solExp = globalMin(stockCombinations[q][0], stockCombinations[q][1], plt, correlation, stockListCombinations, stockList, q)[3]
 percentages = str(solExp[0]) + (stockListCombinations[q][0])  + " | "+ str(100 - solExp[0]) + str(stockListCombinations[q][1])
-plt.plot(coor[0], coor[1], marker='o', label= 'Global Min | ' + percentages)
+#plt.plot(coor[0], coor[1], marker='o', label= 'Global Min | ' + percentages)
 #plt.rcParams.update({'font.': 11})
-plt.annotate(percentages , (coor[0], coor[1]), fontsize=7.5)
+#plt.annotate(percentages , (coor[0], coor[1]), fontsize=7.5)
 #plt.legend(bbox_to_anchor=(1.05, 1.0),loc='upper left')
-plt.show()
+#plt.show()
 
 #____________________________________________________________________________________
 
@@ -171,12 +171,24 @@ print(f"Baseline Buy-and-Hold Strategy yields:" +
       f"\n\t{b_sharpe:.2f} Sharpe Ratio")
 
 periods = [3, 5, 15, 30, 90]
-fig = plt.figure(figsize=(12, 10))
-gs = fig.add_gridspec(4, 6)
-minPlot = fig.add_subplot(gs[:2, 2])
-ax0 = fig.add_subplot(gs[:2, :4])
-ax1 = fig.add_subplot(gs[2:, :2])
-ax2 = fig.add_subplot(gs[2:, 2:])
+fig = plt.figure(figsize=(14, 12))
+gs = fig.add_gridspec(4, 10)
+minPlot = fig.add_subplot(gs[:2, 6:])
+ax0 = fig.add_subplot(gs[:2, :6])
+ax1 = fig.add_subplot(gs[2:, :5])
+ax2 = fig.add_subplot(gs[2:, 5:])
+
+
+for q in range(len(stockCombinations)):
+    graphData = globalMin(stockCombinations[q][0], stockCombinations[q][1], minPlot, correlation, stockListCombinations, stockList, q)[4]
+    minPlot.plot(graphData[1], graphData[2])
+    minPlot.plot(graphData[5], graphData[6], marker='o', label= 'Global Min | ' + str(graphData[4]))
+    minPlot.annotate(graphData[4] , graphData[3], fontsize=7.5)
+
+minPlot.grid()
+minPlot.set_title('Minimum Variance Frontier ' + graphData[0], fontsize=11)
+minPlot.set_ylabel('Daily Returns (%)')
+minPlot.set_xlabel('Standard Deviation/Risk (%)')
 
 ax0.plot((np.exp(returns.cumsum()) - 1), label='B&H', linestyle='-')
 perf_dict = {'tot_ret': {'buy_and_hold': (np.exp((returns[0].sum()*percent1 + returns[1].sum()*percent2) - 1))}}

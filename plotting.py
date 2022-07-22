@@ -29,21 +29,23 @@ def globalMin(stock1, stock2, minPlot, correlation, stockListCombinations, stock
     solExp[0] = round(solExp[0])
     #print(solExp[0])
     
-    minPlot.grid()
-    minPlot.title('Minimum Variance Frontier ' + str(stockList))
-    minPlot.xlabel('Standard Deviation/Risk (%)', fontsize=11)
-    minPlot.ylabel('Daily Return (%)', fontsize=11)
-    minPlot.plot(portfolioStdDev(stock1, stock2, correlation), portfolioExpReturn(stock1, stock2))
+    #minPlot.grid()
+    #minPlot.title('Minimum Variance Frontier ' + str(stockList))
+    #minPlot.xlabel('Standard Deviation/Risk (%)', fontsize=11)
+    #minPlot.ylabel('Daily Return (%)', fontsize=11)
+    #minPlot.plot(portfolioStdDev(stock1, stock2, correlation), portfolioExpReturn(stock1, stock2))
     firstStock = {solExp[0]:stockListCombinations[q][0]}
     secondStock = {100 - solExp[0]:stockListCombinations[q][1]}
     percentages = str(solExp[0]) + (stockListCombinations[q][0])  + " | "+ str(100 - solExp[0]) + str(stockListCombinations[q][1])
     percentagesDict = {percentages:(firstStock, secondStock)}
-    minPlot.plot(x_min, y_min, marker='o', label= 'Global Min | ' + percentages)
+    #minPlot.plot(x_min, y_min, marker='o', label= 'Global Min | ' + percentages)
     
-    minPlot.rcParams.update({'font.size': 11})
-    minPlot.annotate(percentages , (x_min, y_min), fontsize=7.5)
-    minPlot.legend(bbox_to_anchor=(1.05, 1.0),loc='upper left')
-    return (x_min, y_min, percentages), {percentages: (x_min, y_min)}, percentagesDict, solExp
+    #minPlot.rcParams.update({'font.size': 11})
+    #minPlot.annotate(percentages , (x_min, y_min), fontsize=7.5)
+    #minPlot.legend(bbox_to_anchor=(1.05, 1.0),loc='upper left')
+
+    graphingData = [str(stockList),portfolioStdDev(stock1, stock2, correlation), portfolioExpReturn(stock1, stock2), (x_min, y_min), percentages, x_min, y_min]
+    return (x_min, y_min, percentages), {percentages: (x_min, y_min)}, percentagesDict, solExp, graphingData
 
 
 
