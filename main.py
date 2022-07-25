@@ -4,6 +4,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from scipy import optimize
+from flask import Flask, request, jsonify, render_template
 
 from sympy.solvers import solve
 import sympy
@@ -18,6 +19,22 @@ from stats import stdDev, mean, standDev, correlCo
 from portfolioStats import portfolioExpReturn, portfolioStdDev
 from plotting import globalMin, sharpeRatio
 from TSM import getTicker, logReturnList, newTSMAlgo
+
+#--- FLASK WEBFRAME ------
+# app = Flask(__name__)
+
+# stockListed = []
+# @app.route('/', methods = ['POST', 'GET'])
+# def stockInput():
+#     if request.method == 'POST':
+#         stockNo = request.form.get('amount')
+#         stockListed.append(stockNo)
+#         print(stockListed) # for debugging
+#     return render_template("home.html", stockListed = stockListed)
+
+# if __name__ == '__main__':
+#     # Threaded option to enable multiple instances for multiple user access support
+#     app.run(threaded=True, port=5000)
 
 portfolio = []
 heading = []
@@ -170,13 +187,13 @@ print(f"Baseline Buy-and-Hold Strategy yields:" +
       f"\n\t{b_ann*100:.2f}% annual returns" +
       f"\n\t{b_sharpe:.2f} Sharpe Ratio")
 
-periods = [3, 5, 15, 30, 90]
+periods = [3, 5, 15, 30, 90, 180, 365]
 fig = plt.figure(figsize=(14, 12))
-gs = fig.add_gridspec(4, 10)
-minPlot = fig.add_subplot(gs[:2, 6:])
-ax0 = fig.add_subplot(gs[:2, :6])
-ax1 = fig.add_subplot(gs[2:, :5])
-ax2 = fig.add_subplot(gs[2:, 5:])
+gs = fig.add_gridspec(16, 10)
+minPlot = fig.add_subplot(gs[:7, :4])
+ax0 = fig.add_subplot(gs[:7, 4:])
+ax1 = fig.add_subplot(gs[8:, :5])
+ax2 = fig.add_subplot(gs[8:, 5:])
 
 
 for q in range(len(stockCombinations)):
@@ -186,11 +203,11 @@ for q in range(len(stockCombinations)):
     minPlot.annotate(graphData[4] , graphData[3], fontsize=7.5)
 
 minPlot.grid()
-minPlot.set_title('Minimum Variance Frontier ' + graphData[0], fontsize=11)
+minPlot.set_title('Fig 1. Minimum Variance Frontier ' + graphData[0], fontsize=11)
 minPlot.set_ylabel('Daily Returns (%)')
 minPlot.set_xlabel('Standard Deviation/Risk (%)')
 
-ax0.plot((np.exp(returns.cumsum()) - 1), label='B&H', linestyle='-')
+ax0.plot((np.exp(returns.cumsum()) - 1)*100, label='B&H', linestyle='-')
 perf_dict = {'tot_ret': {'buy_and_hold': (np.exp((returns[0].sum()*percent1 + returns[1].sum()*percent2) - 1))}}
 perf_dict['ann_ret'] = {'buy_and_hold': b_ann}
 perf_dict['sharpe'] = {'buy_and_hold': b_sharpe}
@@ -205,7 +222,7 @@ for p in periods:
     ax0.plot((perf - 1) * 100, label=f'{p}-Day Mean') #Plot first graph.
 ax0.set_ylabel('Returns (%)')
 ax0.set_xlabel('Date')
-ax0.set_title('Cumulative Returns ' + str(percentageDict[sharpeDict[maxRatio]]))
+ax0.set_title('Fig 2. Cumulative Returns | Best Pair: ' + str(percentageDict[sharpeDict[maxRatio]]))
 ax0.grid()
 ax0.legend()
 
@@ -219,7 +236,7 @@ ax1.set_xticklabels([f'{k}-Day Mean'
 ax1.grid()
 ax1.set_ylabel('Returns (%)')
 ax1.set_xlabel('Strategy')
-ax1.set_title('Annual Returns ' + str(percentageDict[sharpeDict[maxRatio]]))
+ax1.set_title('Fig 3. Annual Returns | Best Pair: ' + str(percentageDict[sharpeDict[maxRatio]]))
 
 _ = [ax2.bar(i, v) for i, v in enumerate(perf_dict['sharpe'].values())]
 ax2.set_xticks([i for i, k in enumerate(perf_dict['sharpe'])])
@@ -230,6 +247,20 @@ ax2.set_xticklabels([f'{k}-Day Mean'
 ax2.grid()
 ax2.set_ylabel('Sharpe Ratio')
 ax2.set_xlabel('Strategy')
-ax2.set_title('Sharpe Ratio ' + str(percentageDict[sharpeDict[maxRatio]]))
+ax2.set_title('Fig 4. Sharpe Ratio | Best Pair: ' + str(percentageDict[sharpeDict[maxRatio]]))
 plt.tight_layout()
 plt.show()
+
+#--- FLASK WEBFRAME ------
+#app = Flask(__name__)
+
+#@app.route('/', methods = ['POST', 'GET'])
+#def feed():
+    #if request.method == 'POST':
+        #stockNo = request.form.get('amount')
+        #print(type(stockNo)) # for debugging
+        #return render_template("home.html", stockNo=stockNo)
+
+#if __name__ == '__main__':
+    # Threaded option to enable multiple instances for multiple user access support
+    #app.run(threaded=True, port=5000)
