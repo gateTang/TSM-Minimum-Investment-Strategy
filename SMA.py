@@ -12,12 +12,12 @@ def SMAstrategy (df):
     buy_price = 0
     
     for i in range (0, len(df)):
-        if df['SMA'][i] > df['Close'][i] and flag == 0:
+        if df['SMAMax'][i] > df['Close'][i] and flag == 0:
             buy.append(df['Close'][i])
             sell.append(np.nan)
             buy_price = df['Close'][i]
             flag = 1
-        elif df['SMA'][i] < df['Close'][i] and flag == 1 and buy_price < df['Close'][i]:
+        elif df['SMAMax'][i] < df['Close'][i] and flag == 1 and buy_price < df['Close'][i]:
             buy.append(np.nan)
             sell.append(df['Close'][i])
             buy_price = 0

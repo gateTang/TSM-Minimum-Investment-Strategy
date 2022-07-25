@@ -19,6 +19,7 @@ from stats import stdDev, mean, standDev, correlCo
 from portfolioStats import portfolioExpReturn, portfolioStdDev
 from plotting import globalMin, sharpeRatio
 from TSM import getTicker, logReturnList, newTSMAlgo
+from SMA import SMA, SMAstrategy
 
 #--- FLASK WEBFRAME ------
 # app = Flask(__name__)
@@ -188,12 +189,14 @@ print(f"Baseline Buy-and-Hold Strategy yields:" +
       f"\n\t{b_sharpe:.2f} Sharpe Ratio")
 
 periods = [3, 5, 15, 30, 90, 180, 365]
-fig = plt.figure(figsize=(14, 12))
-gs = fig.add_gridspec(16, 10)
-minPlot = fig.add_subplot(gs[:7, :4])
-ax0 = fig.add_subplot(gs[:7, 4:])
-ax1 = fig.add_subplot(gs[8:, :5])
-ax2 = fig.add_subplot(gs[8:, 5:])
+fig = plt.figure(figsize=(21, 12))
+gs = fig.add_gridspec(6, 10)
+minPlot = fig.add_subplot(gs[:2, 6:])
+ax0 = fig.add_subplot(gs[:2, :6])
+ax1 = fig.add_subplot(gs[2:4, :5])
+ax2 = fig.add_subplot(gs[2:4, 5:])
+ax3 = fig.add_subplot(gs[4:,:6])
+ax4 = fig.add_subplot(gs[4:, 6:])
 
 
 for q in range(len(stockCombinations)):
@@ -248,6 +251,90 @@ ax2.grid()
 ax2.set_ylabel('Sharpe Ratio')
 ax2.set_xlabel('Strategy')
 ax2.set_title('Fig 4. Sharpe Ratio | Best Pair: ' + str(percentageDict[sharpeDict[maxRatio]]))
+#plt.tight_layout()
+#plt.show()
+
+#------------------- FOR SMA STRATEGY --------------------------
+
+ann_retDict = perf_dict['ann_ret'].copy()
+sharpe_Dict = perf_dict['sharpe'].copy()
+
+del ann_retDict['buy_and_hold']
+del sharpe_Dict['buy_and_hold']
+
+#print(ann_retDict)
+#print(sharpe_Dict)
+
+combinedDict = {k: ann_retDict[k]*sharpe_Dict[k] for k in ann_retDict}
+maxValue = max(combinedDict, key=combinedDict.get)
+
+dataLog[0]['SMA90'] = SMA(dataLog[0].iloc[-500:], period=120)
+dataLog[0]['SMAMax'] = SMA(dataLog[0].iloc[-500:], period=maxValue)
+#dataLog[1]['SMA'] = SMA(dataLog[1])
+
+strat1 = SMAstrategy(dataLog[0])
+dataLog[0]['Buy'] = strat1[0]
+dataLog[0]['Sell'] = strat1[1]
+
+#ax2.figure(figsize=(16,8))
+ax3.set_title('Fig 5.')
+ax3.plot(dataLog[0].iloc[-500:]['Close'], label='Close Price')
+ax3.plot(dataLog[0].iloc[-500:]['SMA90'], label='SMA')
+ax3.plot(dataLog[0].iloc[-500:]['SMAMax'], label='SMA')
+ax3.scatter(dataLog[0].index, dataLog[0]['Buy'], color='green', label='Buy Signal', marker='^')
+ax3.scatter(dataLog[0].index, dataLog[0]['Sell'], color='red', label='Sell Signal', marker='v')
+ax3.set_xlabel('Date')
+ax3.set_ylabel('Close Price in USD')
+
+
+#plt.plot(dataLog[0]['SMA'])
+#plt.plot(dataLog[0]['Close'])
+coorText = []
+idx20 = np.argwhere(np.diff(np.sign(dataLog[0]['SMAMax'].values - dataLog[0]['SMA90'].values))).flatten()
+ax3.scatter(dataLog[0]['SMAMax'].index[idx20], dataLog[0]['SMA90'].values[idx20], color='red')
+intersectCoor = pd.DataFrame(dataLog[0]['SMA90'].values[idx20], dataLog[0]['SMAMax'].index[idx20], ['Coordinates'])
+print(intersectCoor.index)
+for l in range(len(intersectCoor)):
+    coorIndex = str(intersectCoor.index[l])[0:10]
+    coorY = str(dataLog[0]['SMA90'].values[idx20][l])[0:5]
+    coorText.append('('+coorIndex + ',' + coorY + ')')
+    ax3.annotate(coorText[l], (intersectCoor.index[l], dataLog[0]['SMA90'].values[idx20][l]), fontsize=9)
+
+#----------------
+
+combinedDict2 = {k: ann_retDict[k]*sharpe_Dict[k] for k in ann_retDict}
+maxValue2 = max(combinedDict2, key=combinedDict2.get)
+
+dataLog[1]['SMA90'] = SMA(dataLog[1].iloc[-500:], period=120)
+dataLog[1]['SMAMax'] = SMA(dataLog[1].iloc[-500:], period=maxValue2)
+
+strat2 = SMAstrategy(dataLog[1])
+dataLog[1]['Buy'] = strat2[0]
+dataLog[1]['Sell'] = strat2[1]
+
+ax4.set_title('Fig 6.')
+ax4.plot(dataLog[1].iloc[-500:]['Close'], label='Close Price')
+ax4.plot(dataLog[1].iloc[-500:]['SMA90'], label='SMA')
+ax4.plot(dataLog[1].iloc[-500:]['SMAMax'], label='SMA')
+ax4.scatter(dataLog[1].dropna(subset=['SMA90']).index, dataLog[1].dropna(subset=['SMA90'])['Buy'], color='green', label='Buy Signal', marker='^')
+ax4.scatter(dataLog[1].dropna(subset=['SMA90']).index, dataLog[1].dropna(subset=['SMA90'])['Sell'], color='red', label='Sell Signal', marker='v')
+ax4.set_xlabel('Date')
+ax4.set_label('Close Price in USD')
+
+
+#plt.plot(dataLog[0]['SMA'])
+#plt.plot(dataLog[0]['Close'])
+coorText = []
+idx20 = np.argwhere(np.diff(np.sign(dataLog[1]['SMAMax'].values - dataLog[1]['SMA90'].values))).flatten()
+ax4.scatter(dataLog[1]['SMAMax'].index[idx20], dataLog[1]['SMA90'].values[idx20], color='red')
+intersectCoor = pd.DataFrame(dataLog[1]['SMA90'].values[idx20], dataLog[1]['SMAMax'].index[idx20], ['Coordinates'])
+print(intersectCoor.index)
+for l in range(len(intersectCoor)):
+    coorIndex = str(intersectCoor.index[l])[0:10]
+    coorY = str(dataLog[1]['SMA90'].values[idx20][l])[0:5]
+    coorText.append('('+coorIndex + ',' + coorY + ')')
+    ax4.annotate(coorText[l], (intersectCoor.index[l], dataLog[1]['SMA90'].values[idx20][l]), fontsize=9)
+
 plt.tight_layout()
 plt.show()
 
