@@ -37,14 +37,14 @@ def stockInput():
         submitState = request.form.get('submitState')
         resetState = request.form.get('resetState')
         stockListed.append(stockNo)
-        print(stockListed) # for debugging
-        print(submitState)
-        print(resetState)
+        #print(stockListed) # for debugging
+        #print(submitState)
+        #print(resetState)
         if submitState =='1':
             confirmedList = stockListed
             submitState = 0
             confirmedList.pop(-1)
-            print(confirmedList)
+            #print(confirmedList)
             #---D - Line 44 - 344
             portfolio = []
             heading = []
@@ -65,11 +65,11 @@ def stockInput():
             #print(stock_dict)
 
             combinations = list(itertools.combinations(range(stockAmt), 2))
-            print(portfolio)
+            #print(portfolio)
             stockListCombinations = list(itertools.combinations(stockList, 2))
             stockCombinations = stockUnzip(stock_dict, combinations)
 
-            print(stockListCombinations)
+            #print(stockListCombinations)
             #To identify what is the corresponding percentages for the ideal portfolio.
             #for c in range(len(stockCombinations)):
 
@@ -78,7 +78,7 @@ def stockInput():
                     expAppendList1 = expectedReturn(stockCombinations[j][0])
                     expAppendList2 = expectedReturn(stockCombinations[j][1])
                     expReturnList.append((expAppendList1, expAppendList2))
-            print(expReturnList)
+            #print(expReturnList)
 
             stdReturnList = []
             for j in range (len(stockCombinations)):
@@ -90,7 +90,7 @@ def stockInput():
             for o in range(len(stockCombinations)):
                 correlation = correlCo([x for x in stockCombinations[o][0]['Daily Returns'].tolist() if str(x) != 'nan'], [x for x in stockCombinations[o][1]['Daily Returns'].tolist() if str(x) != 'nan'])
                 correlList.append(correlation)
-            print(correlList)
+            #print(correlList)
 
             portfolioExpList = []
             for t in range(len(stockCombinations)):
@@ -123,8 +123,8 @@ def stockInput():
             minRatio = min(ratioList)
             sharpeDict = dict(zip(ratioList, stockListCombinations))
             percentageDict = dict(zip(stockListCombinations, percentageList))
-            print("Best combination is: "+ str(sharpeDict[maxRatio]) +  " " + str(percentageDict[sharpeDict[maxRatio]]))
-            print("Worst combination is: "+ str(sharpeDict[minRatio]) +  " " + str(percentageDict[sharpeDict[minRatio]]))
+            #print("Best combination is: "+ str(sharpeDict[maxRatio]) +  " " + str(percentageDict[sharpeDict[maxRatio]]))
+            #print("Worst combination is: "+ str(sharpeDict[minRatio]) +  " " + str(percentageDict[sharpeDict[minRatio]]))
 
             #plt.grid()
             #plt.title('Minimum Variance Frontier ' + str(stockList))
@@ -153,8 +153,8 @@ def stockInput():
                     data = stockPercentileList[h][str(percentageDict[sharpeDict[maxRatio]])]
                 except KeyError:
                     pass
-            print(str(percentageDict[sharpeDict[maxRatio]]))
-            print(data)
+            #print(str(percentageDict[sharpeDict[maxRatio]]))
+            #print(data)
 
             #________________________________________________________________________________________
 
@@ -184,10 +184,10 @@ def stockInput():
 
             rfr = 0.7/365
             sharpe = (ann - rfr) / vol
-            print(f"1-day TSM Strategy yields:" +
-                f"\n\t{tot*100:.2f}% total returns" + 
-                f"\n\t{ann*100:.2f}% annual returns" +
-                f"\n\t{sharpe:.2f} Sharpe Ratio")
+            # print(f"1-day TSM Strategy yields:" +
+            #     f"\n\t{tot*100:.2f}% total returns" + 
+            #     f"\n\t{ann*100:.2f}% annual returns" +
+            #     f"\n\t{sharpe:.2f} Sharpe Ratio")
 
             stock_ret1 = np.exp(returnList[0].cumsum())
             stock_ret2 = np.exp(returnList[1].cumsum())
@@ -195,10 +195,10 @@ def stockInput():
             b_ann = (stock_ret1[-1]*percent1 + stock_ret2[-1]*percent2) ** (1 / years) - 1
             b_vol = bestCoor[0] * np.sqrt(252)
             b_sharpe = (b_ann - rfr) / b_vol
-            print(f"Baseline Buy-and-Hold Strategy yields:" + 
-                f"\n\t{b_tot*100:.2f}% total returns" + 
-                f"\n\t{b_ann*100:.2f}% annual returns" +
-                f"\n\t{b_sharpe:.2f} Sharpe Ratio")
+            # print(f"Baseline Buy-and-Hold Strategy yields:" + 
+            #     f"\n\t{b_tot*100:.2f}% total returns" + 
+            #     f"\n\t{b_ann*100:.2f}% annual returns" +
+            #     f"\n\t{b_sharpe:.2f} Sharpe Ratio")
 
             periods = [3, 5, 15, 30, 90, 180, 365]
             fig = plt.figure(figsize=(21, 12))
@@ -241,7 +241,7 @@ def stockInput():
             ax0.grid()
             ax0.legend()
 
-            print(perf_dict)
+            # print(perf_dict)
             _ = [ax1.bar(i, v * 100) for i, v in enumerate(perf_dict['ann_ret'].values())]
             ax1.set_xticks([i for i, k in enumerate(perf_dict['ann_ret'])])
             ax1.set_xticklabels([f'{k}-Day Mean' 
@@ -280,7 +280,7 @@ def stockInput():
             combinedDict = {k: ann_retDict[k]*sharpe_Dict[k] for k in ann_retDict}
             maxValue = max(combinedDict, key=combinedDict.get)
 
-            dataLog[0]['SMA90'] = SMA(dataLog[0].iloc[-500:], period=120)
+            dataLog[0]['SMA120'] = SMA(dataLog[0].iloc[-500:], period=120)
             dataLog[0]['SMAMax'] = SMA(dataLog[0].iloc[-500:], period=maxValue)
             #dataLog[1]['SMA'] = SMA(dataLog[1])
 
@@ -289,12 +289,13 @@ def stockInput():
             dataLog[0]['Sell'] = strat1[1]
 
             #ax2.figure(figsize=(16,8))
-            ax3.set_title('Fig 5.')
+            ax3.set_title('Fig 5. SMA of '+ str(percentageDict[sharpeDict[maxRatio]].split(' | ')[0]))
             ax3.plot(dataLog[0].iloc[-500:]['Close'], label='Close Price')
-            ax3.plot(dataLog[0].iloc[-500:]['SMA90'], label='SMA')
-            ax3.plot(dataLog[0].iloc[-500:]['SMAMax'], label='SMA')
+            ax3.plot(dataLog[0].iloc[-500:]['SMA120'], label='SMA120')
+            ax3.plot(dataLog[0].iloc[-500:]['SMAMax'], label='SMA'+str(maxValue))
             ax3.scatter(dataLog[0].index, dataLog[0]['Buy'], color='green', label='Buy Signal', marker='^')
             ax3.scatter(dataLog[0].index, dataLog[0]['Sell'], color='red', label='Sell Signal', marker='v')
+            ax3.legend()
             ax3.set_xlabel('Date')
             ax3.set_ylabel('Close Price in USD')
 
@@ -302,50 +303,52 @@ def stockInput():
             #plt.plot(dataLog[0]['SMA'])
             #plt.plot(dataLog[0]['Close'])
             coorText = []
-            idx20 = np.argwhere(np.diff(np.sign(dataLog[0]['SMAMax'].values - dataLog[0]['SMA90'].values))).flatten()
-            ax3.scatter(dataLog[0]['SMAMax'].index[idx20], dataLog[0]['SMA90'].values[idx20], color='red')
-            intersectCoor = pd.DataFrame(dataLog[0]['SMA90'].values[idx20], dataLog[0]['SMAMax'].index[idx20], ['Coordinates'])
-            print(intersectCoor.index)
+            idx20 = np.argwhere(np.diff(np.sign(dataLog[0]['SMAMax'].values - dataLog[0]['SMA120'].values))).flatten()
+            ax3.scatter(dataLog[0]['SMAMax'].index[idx20], dataLog[0]['SMA120'].values[idx20], color='red')
+            intersectCoor = pd.DataFrame(dataLog[0]['SMA120'].values[idx20], dataLog[0]['SMAMax'].index[idx20], ['Coordinates'])
+            # print(intersectCoor.index)
             for l in range(len(intersectCoor)):
                 coorIndex = str(intersectCoor.index[l])[0:10]
-                coorY = str(dataLog[0]['SMA90'].values[idx20][l])[0:5]
+                coorY = str(dataLog[0]['SMA120'].values[idx20][l])[0:5]
                 coorText.append('('+coorIndex + ',' + coorY + ')')
-                ax3.annotate(coorText[l], (intersectCoor.index[l], dataLog[0]['SMA90'].values[idx20][l]), fontsize=9)
+                ax3.annotate(coorText[l], (intersectCoor.index[l], dataLog[0]['SMA120'].values[idx20][l]), fontsize=9)
 
             #----------------
 
             combinedDict2 = {k: ann_retDict[k]*sharpe_Dict[k] for k in ann_retDict}
             maxValue2 = max(combinedDict2, key=combinedDict2.get)
 
-            dataLog[1]['SMA90'] = SMA(dataLog[1].iloc[-500:], period=120)
+            dataLog[1]['SMA120'] = SMA(dataLog[1].iloc[-500:], period=120)
             dataLog[1]['SMAMax'] = SMA(dataLog[1].iloc[-500:], period=maxValue2)
 
             strat2 = SMAstrategy(dataLog[1])
             dataLog[1]['Buy'] = strat2[0]
             dataLog[1]['Sell'] = strat2[1]
 
-            ax4.set_title('Fig 6.')
+            ax4.set_title('Fig 6. SMA of '+ str(percentageDict[sharpeDict[maxRatio]].split(' | ')[1]))
             ax4.plot(dataLog[1].iloc[-500:]['Close'], label='Close Price')
-            ax4.plot(dataLog[1].iloc[-500:]['SMA90'], label='SMA')
-            ax4.plot(dataLog[1].iloc[-500:]['SMAMax'], label='SMA')
-            ax4.scatter(dataLog[1].dropna(subset=['SMA90']).index, dataLog[1].dropna(subset=['SMA90'])['Buy'], color='green', label='Buy Signal', marker='^')
-            ax4.scatter(dataLog[1].dropna(subset=['SMA90']).index, dataLog[1].dropna(subset=['SMA90'])['Sell'], color='red', label='Sell Signal', marker='v')
+            ax4.plot(dataLog[1].iloc[-500:]['SMA120'], label='SMA120')
+            ax4.plot(dataLog[1].iloc[-500:]['SMAMax'], label='SMA'+str(maxValue))
+            ax4.scatter(dataLog[1].dropna(subset=['SMA120']).index, dataLog[1].dropna(subset=['SMA120'])['Buy'], color='green', label='Buy Signal', marker='^')
+            ax4.scatter(dataLog[1].dropna(subset=['SMA120']).index, dataLog[1].dropna(subset=['SMA120'])['Sell'], color='red', label='Sell Signal', marker='v')
+            ax4.legend()
             ax4.set_xlabel('Date')
+            ax4.set_ylabel('Close Price in USD')
             ax4.set_label('Close Price in USD')
 
 
             #plt.plot(dataLog[0]['SMA'])
             #plt.plot(dataLog[0]['Close'])
             coorText = []
-            idx20 = np.argwhere(np.diff(np.sign(dataLog[1]['SMAMax'].values - dataLog[1]['SMA90'].values))).flatten()
-            ax4.scatter(dataLog[1]['SMAMax'].index[idx20], dataLog[1]['SMA90'].values[idx20], color='red')
-            intersectCoor = pd.DataFrame(dataLog[1]['SMA90'].values[idx20], dataLog[1]['SMAMax'].index[idx20], ['Coordinates'])
-            print(intersectCoor.index)
+            idx20 = np.argwhere(np.diff(np.sign(dataLog[1]['SMAMax'].values - dataLog[1]['SMA120'].values))).flatten()
+            ax4.scatter(dataLog[1]['SMAMax'].index[idx20], dataLog[1]['SMA120'].values[idx20], color='red')
+            intersectCoor = pd.DataFrame(dataLog[1]['SMA120'].values[idx20], dataLog[1]['SMAMax'].index[idx20], ['Coordinates'])
+            # print(intersectCoor.index)
             for l in range(len(intersectCoor)):
                 coorIndex = str(intersectCoor.index[l])[0:10]
-                coorY = str(dataLog[1]['SMA90'].values[idx20][l])[0:5]
+                coorY = str(dataLog[1]['SMA120'].values[idx20][l])[0:5]
                 coorText.append('('+coorIndex + ',' + coorY + ')')
-                ax4.annotate(coorText[l], (intersectCoor.index[l], dataLog[1]['SMA90'].values[idx20][l]), fontsize=9)
+                ax4.annotate(coorText[l], (intersectCoor.index[l], dataLog[1]['SMA120'].values[idx20][l]), fontsize=9)
 
             plt.tight_layout()
 
