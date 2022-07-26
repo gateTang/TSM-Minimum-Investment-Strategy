@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+
+  <body>
+    <form method = "POST">
+        <h2><b>Stocks</b></h2> <input type = "text" name="amount">
+        <input type = "submit" value="Add">
+    </form> 
+    <h2>Stock Listed: <b>{{stockListed}}</b></h2>
+    <form method="POST"'>
+      <input type="hidden" id="submitState" name="submitState" value="1">
+      <input type="submit">
+    </form>
+    <form method="POST"'>
+      <input type="hidden" id="resetState" name="resetState" value="1">
+      <input type="submit" value="Reset">
+  </form>
+  </body>
+</html>
+

@@ -42,3 +42,16 @@ def stockUnzip(dictionary, combinations):
         selection2 = dictionary[combinations[f][1]]
         pairsList.append((selection1,selection2))
     return pairsList
+
+def newPortfolioSelect(portfolio, stockList):
+    newStockList = []
+    for t in range(len(stockList)):
+        stockChosen = stockList[t]
+        stockValid= yf.download(stockChosen, start='2022-01-01')
+        stockValid = stockValid.drop(['Open', 'High', 'Low', 'Adj Close', 'Volume'], axis=1)
+        dailyReturn(stockValid)
+        errorState = False
+        portfolio.append(stockValid)
+        newStockList.append(stockChosen)
+        #print(len(stockValid))
+    return portfolio
