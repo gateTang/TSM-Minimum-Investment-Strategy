@@ -195,8 +195,10 @@ minPlot = fig.add_subplot(gs[:2, 6:])
 ax0 = fig.add_subplot(gs[:2, :6])
 ax1 = fig.add_subplot(gs[2:4, :5])
 ax2 = fig.add_subplot(gs[2:4, 5:])
+
 ax3 = fig.add_subplot(gs[4:,:5])
 ax4 = fig.add_subplot(gs[4:, 5:])
+
 
 
 for q in range(len(stockCombinations)):
