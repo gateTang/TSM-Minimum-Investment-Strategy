@@ -30,7 +30,7 @@ app = Flask(__name__)
 
 stockListed = []
 
-@app.route('/2Asset', methods = ['POST', 'GET'])
+@app.route('/', methods = ['POST', 'GET'])
 def stockInput():
     resetState = 0
     topStocks = []
