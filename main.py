@@ -23,35 +23,49 @@ from portfolioStats import portfolioExpReturn, portfolioStdDev
 from plotting import globalMin, sharpeRatio
 from TSM import getTicker, logReturnList, newTSMAlgo
 from SMA import SMA, SMAstrategy
+from ranking import lookBackRank
 
 #--- FLASK WEBFRAME ------
 app = Flask(__name__)
 
 stockListed = []
 
-@app.route('/', methods = ['POST', 'GET'])
+@app.route('/2Asset', methods = ['POST', 'GET'])
 def stockInput():
     resetState = 0
+    topStocks = []
+    lookBackPeriod = request.form.get('lookBackPeriod')
+    
     if request.method == 'POST':
         stockNo = request.form.get('amount')
+        #Requests for information in the <form> sent by home.html
         submitState = request.form.get('submitState')
         resetState = request.form.get('resetState')
         stockListed.append(stockNo)
+
+        if None in stockListed:
+            stockListed.remove(None)
+
         #print(stockListed) # for debugging
         #print(submitState)
         #print(resetState)
         if submitState =='1':
             confirmedList = stockListed
             submitState = 0
-            confirmedList.pop(-1)
+            #confirmedList.pop(-1)
             #print(confirmedList)
             #---D - Line 44 - 344
             portfolio = []
             heading = []
-            stockAmt = len(confirmedList)
+            #stockAmt = len(confirmedList)
             stockList = confirmedList
             #print(stockAmt)
+            topStocks = lookBackRank(stockList, lookBackPeriod)
+            print(topStocks)
 
+            stockList = topStocks
+
+            stockAmt = len(topStocks)
             for q in range(stockAmt):
                 if len(newPortfolioSelect(portfolio, stockList)[0]) == stockAmt:
                     break
@@ -351,17 +365,18 @@ def stockInput():
                 ax4.annotate(coorText[l], (intersectCoor.index[l], dataLog[1]['SMA120'].values[idx20][l]), fontsize=9)
 
             plt.tight_layout()
+            #plt.show()
 
             img = io.BytesIO()
             fig.savefig(img)
             img.seek(0)
 
-            return send_file(img, mimetype='img/png', attachment_filename="img.jpg")
+            return send_file(img, mimetype='img/png', attachment_filename='Top3_' + graphData[0]+".jpg")
             #---D 
         if resetState == '1':
             del stockListed[:]
             resetState = 0
-    return render_template("home.html", stockListed = stockListed)
+    return render_template("home.html", stockListed = stockListed, lookBackPeriod=lookBackPeriod, topStocks=topStocks)
 
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support

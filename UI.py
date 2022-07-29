@@ -46,9 +46,11 @@ def stockUnzip(dictionary, combinations):
 def newPortfolioSelect(portfolio, stockList):
     newStockList = []
     for t in range(len(stockList)):
-        stockChosen = stockList[t]
-        stockValid= yf.download(stockChosen, start='2022-01-01')
-        stockValid = stockValid.drop(['Open', 'High', 'Low', 'Adj Close', 'Volume'], axis=1)
+        stockChosen = stockList[t] #Daily returns is good.
+        yfObj = yf.Ticker(stockChosen)
+        data = yfObj.history(start='2000-01-01', end='2022-12-31')
+        #stockValid= yf.download(stockChosen, start='2022-01-01') #Change to earliest date possible for all combinations of asset.
+        stockValid = data.drop(['Open', 'High', 'Low', 'Volume'], axis=1) #Adj closing price better --> It is adjusted for dividends. Could be split.
         dailyReturn(stockValid)
         errorState = False
         portfolio.append(stockValid)
