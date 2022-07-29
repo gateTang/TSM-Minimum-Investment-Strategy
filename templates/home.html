@@ -6,18 +6,32 @@
   </head>
 
   <body>
+    <div class="topnav" style="margin:0; position: relative; display: inline-block">
+      <a href="2Asset">2 Asset</a>
+      <a href="3Asset">3 Asset</a>
+    </div>
+    <h2><b>2 Asset Time Series Momentum - Minimum Variance Strategy By GT</b>
+      <h3>(When ready, click on 'Submit') </h3>
+      <p>Please be aware that this program does have many bugs. If the Stock Listed value is not to what is needed, please utilize the 'reset' and 'add' button until satisfied.</p>
+      </h2> 
     <form method = "POST">
-        <h2><b>Time Series Momentum - Minimum Variance Strategy By GT</b>
-        <h3>(When ready, click on 'Submit') </h3>
-        <p>Please be aware that this program does have many bugs. If the Stock Listed value is not to what is needed, please utilize the 'reset' and 'add' button until satisfied.</p>
-        </h2> <input type = "text" name="amount">
+        Asset (E.g. AAPL): <input type = "text" name="amount">
         <input type = "submit" value="Add">
     </form> 
     <h2>Stock Listed: <b>{{stockListed}}</b></h2>
+
+    <form method="POST">
+      Lookback Period (Days): <input type="text" name="lookBackPeriod">
+      <input type = "submit" value="Add">
+    </form> 
+    <h2>Lookback Period: <b>{{lookBackPeriod}}</b></h2>
+    <h2> Top 3 assets will be downloaded as a .jpg file. However, only 2 assets will be optimized.</h2>
+    <p>It may take 15-30 seconds to process the data before a download link is created.</p>
     <form method="POST"'>
       <input type="hidden" id="submitState" name="submitState" value="1">
       <input type="submit">
     </form>
+   
     <form method="POST"'>
       <input type="hidden" id="resetState" name="resetState" value="1">
       <input type="submit" value="Reset">
