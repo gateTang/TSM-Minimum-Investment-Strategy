@@ -41,10 +41,15 @@ def stockInput():
         #Requests for information in the <form> sent by home.html
         submitState = request.form.get('submitState')
         resetState = request.form.get('resetState')
+        addStockState = request.form.get('addStockState')
         stockListed.append(stockNo)
 
         if None in stockListed:
             stockListed.remove(None)
+
+        if addStockState == '1':
+            addStockState = '0'
+            return render_template('home.html', stockListed=stockListed)
 
         #print(stockListed) # for debugging
         #print(submitState)
