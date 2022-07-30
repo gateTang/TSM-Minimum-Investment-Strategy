@@ -35,9 +35,10 @@ def stockInput():
     resetState = 0
     topStocks = []
     lookBackPeriod = request.form.get('lookBackPeriod')
+    stockNo = request.form.get('amount')
     
     if request.method == 'POST':
-        stockNo = request.form.get('amount')
+        # stockNo = request.form.get('amount')
         #Requests for information in the <form> sent by home.html
         submitState = request.form.get('submitState')
         resetState = request.form.get('resetState')
@@ -395,7 +396,7 @@ def stockInput():
         if resetState == '1':
             del stockListed[:]
             resetState = '0'
-    return render_template("home.html", lookBackPeriod=lookBackPeriod, topStocks=topStocks)
+    return render_template("home.html", stockListed=stockListed, lookBackPeriod=lookBackPeriod, topStocks=topStocks)
 
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support
