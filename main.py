@@ -99,10 +99,20 @@ def stockInput():
                     stdAppendList1 = stdDev(stockCombinations[j][0])
                     stdAppendList2 = stdDev(stockCombinations[j][1])
                     stdReturnList.append((stdAppendList1, stdAppendList2))
-
+            correlList = []
+            firstList = []
+            secondList = []
             correlList = []
             for o in range(len(stockCombinations)):
-                correlation = correlCo([x for x in stockCombinations[o][0]['Daily Returns'].tolist() if str(x) != 'nan'], [x for x in stockCombinations[o][1]['Daily Returns'].tolist() if str(x) != 'nan'])
+                combinationsDf = pd.concat([stockCombinations[o][0],stockCombinations[o][1]], axis=1)
+                dropDf = combinationsDf.dropna(subset=['Daily Returns'])
+                firstDf = dropDf.iloc[:,[0, 3]]
+                print('FirstDF = '+str(firstDf))
+                firstList = firstDf['Daily Returns'].tolist()
+                secondDf = dropDf.iloc[:,[0, 3]]
+                secondList = secondDf['Daily Returns'].tolist()
+                #correlation = correlCo([x for x in stockCombinations[o][0]['Daily Returns'].tolist() if str(x) != 'nan'], [x for x in stockCombinations[o][1]['Daily Returns'].tolist() if str(x) != 'nan'])
+                correlation = correlCo(firstList, secondList)
                 correlList.append(correlation)
             #print(correlList)
 
@@ -186,6 +196,7 @@ def stockInput():
             performanceList = []
             performance = newTSMAlgo(returnList, performanceList, returns, period=1, short=False)
             years = (performance[0].index.max() - performance[0].index.min()).days / 365
+            print('Years = ' + str(years))
             perf_cum = [np.exp(performance[0].cumsum()), np.exp(performance[1].cumsum())]
 
             percent1 = (int(str(data[0])[1:3])/100)
@@ -207,18 +218,18 @@ def stockInput():
             stock_ret2 = np.exp(returnList[1].cumsum())
             b_tot = (stock_ret1[-1]*percent1 + stock_ret2[-1]*percent2) - 1
             b_ann = (stock_ret1[-1]*percent1 + stock_ret2[-1]*percent2) ** (1 / years) - 1
-            b_vol = bestCoor[0] * np.sqrt(252)
+            b_vol = bestCoor[0]*100 * np.sqrt(252)
             b_sharpe = (b_ann - rfr) / b_vol
-            # print(f"Baseline Buy-and-Hold Strategy yields:" + 
-            #     f"\n\t{b_tot*100:.2f}% total returns" + 
-            #     f"\n\t{b_ann*100:.2f}% annual returns" +
-            #     f"\n\t{b_sharpe:.2f} Sharpe Ratio")
+            print(f"\n\t{b_ann:.2f} b_ann" + 
+                f"\n\t{b_vol:.2f}% b_vol" +
+                f"\n\t{b_sharpe:.2f} b_sharpe")
+            print(bestCoor)
 
             periods = [3, 5, 15, 30, 90, 180, 365]
             fig = plt.figure(figsize=(21, 12))
             gs = fig.add_gridspec(6, 10)
-            minPlot = fig.add_subplot(gs[:2, 6:])
-            ax0 = fig.add_subplot(gs[:2, :6])
+            minPlot = fig.add_subplot(gs[:2, :4])
+            ax0 = fig.add_subplot(gs[:2, 4:])
             ax1 = fig.add_subplot(gs[2:4, :5])
             ax2 = fig.add_subplot(gs[2:4, 5:])
             ax3 = fig.add_subplot(gs[4:,:5])
@@ -236,7 +247,7 @@ def stockInput():
             minPlot.set_ylabel('Daily Returns (%)')
             minPlot.set_xlabel('Standard Deviation/Risk (%)')
 
-            ax0.plot((np.exp(returns.cumsum()) - 1)*100, label='B&H', linestyle='-')
+            ax0.plot((np.exp(returns.cumsum()) - 1)*100, label='Simulation Lifespan', linestyle='-')
             perf_dict = {'tot_ret': {'buy_and_hold': (np.exp((returns[0].sum()*percent1 + returns[1].sum()*percent2) - 1))}}
             perf_dict['ann_ret'] = {'buy_and_hold': b_ann}
             perf_dict['sharpe'] = {'buy_and_hold': b_sharpe}
@@ -259,7 +270,7 @@ def stockInput():
             _ = [ax1.bar(i, v * 100) for i, v in enumerate(perf_dict['ann_ret'].values())]
             ax1.set_xticks([i for i, k in enumerate(perf_dict['ann_ret'])])
             ax1.set_xticklabels([f'{k}-Day Mean' 
-                if type(k) is int else 'B&H' for 
+                if type(k) is int else 'Simulation Lifespan' for 
                 k in perf_dict['ann_ret'].keys()],
                 rotation=45)
             ax1.grid()
@@ -267,10 +278,12 @@ def stockInput():
             ax1.set_xlabel('Strategy')
             ax1.set_title('Fig 3. Annual Returns | Best Pair: ' + str(percentageDict[sharpeDict[maxRatio]]))
 
+            #del perf_dict['sharpe']['buy_and_hold']
             _ = [ax2.bar(i, v) for i, v in enumerate(perf_dict['sharpe'].values())]
+            print('Perf Dict: '+str(perf_dict['sharpe']))
             ax2.set_xticks([i for i, k in enumerate(perf_dict['sharpe'])])
             ax2.set_xticklabels([f'{k}-Day Mean' 
-                if type(k) is int else 'B&H' for 
+                if type(k) is int else 'Simulation Lifespan' for 
                 k in perf_dict['sharpe'].keys()],
                 rotation=45)
             ax2.grid()

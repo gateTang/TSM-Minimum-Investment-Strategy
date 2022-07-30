@@ -5,7 +5,7 @@ import numpy as np
 def getTicker(stockList, dataList):
     for i in stockList:
         yfObj = yf.Ticker(i)
-        data = yfObj.history(start='2000-01-01', end='2022-12-31')
+        data = yfObj.history(start='2000-01-01')
         dataList.append(data)
     return dataList
 
