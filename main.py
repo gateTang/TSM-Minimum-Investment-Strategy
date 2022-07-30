@@ -50,6 +50,7 @@ def stockInput():
         if addStockState == '1':
             addStockState = '0'
             return render_template('home.html', stockListed=stockListed)
+        print(stockListed)
 
         #print(stockListed) # for debugging
         #print(submitState)
