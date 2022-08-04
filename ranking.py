@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 import pandas as pd
 import datetime
 import yfinance as yf
@@ -5,6 +6,7 @@ import yfinance as yf
 def lookBackRank(stockList, lookBackPeriod=30):
     totRetDict = {}
     topStocks = []
+    topStats = []
     if lookBackPeriod == None:
         lookBackPeriod = 30
     for i in stockList:
@@ -19,7 +21,10 @@ def lookBackRank(stockList, lookBackPeriod=30):
 
         data['Expected Return'] = (data['Close'].shift(1)/data['Close'])-1
         totDailyRet = data['Expected Return'].cumsum()[-1]
+        print(data)
         totRetDict.update({i:totDailyRet})
 
         topStocks  = sorted(totRetDict, key=totRetDict.get, reverse=True)[:3]
-    return topStocks
+        top2Stocks  = sorted(totRetDict, key=totRetDict.get, reverse=True)[:2]
+        
+    return topStocks, top2Stocks

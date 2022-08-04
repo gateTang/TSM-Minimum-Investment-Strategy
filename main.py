@@ -24,6 +24,7 @@ from plotting import globalMin, sharpeRatio
 from TSM import getTicker, logReturnList, newTSMAlgo
 from SMA import SMA, SMAstrategy
 from ranking import lookBackRank
+from equityChart import equityCurveDf, tickerLoad, drawdownChart
 
 #--- FLASK WEBFRAME ------
 app = Flask(__name__)
@@ -72,7 +73,7 @@ def stockInput():
             #stockAmt = len(confirmedList)
             stockList = confirmedList
             #print(stockAmt)
-            topStocks = lookBackRank(stockList, lookBackPeriod)
+            topStocks = lookBackRank(stockList, lookBackPeriod)[0]
             print(topStocks)
 
             stockList = topStocks
@@ -236,16 +237,38 @@ def stockInput():
                 f"\n\t{b_vol:.2f}% b_vol" +
                 f"\n\t{b_sharpe:.2f} b_sharpe")
             print(bestCoor)
+            print("data is" + str(data) + str(type(data)))
+            #-------------------------------- FOR EQUITY CHART ----------------- Might have to delete
+            top2Stocks = lookBackRank(stockList, lookBackPeriod)[1]
+            returnData1 = tickerLoad(top2Stocks, lookBackPeriod)
+            returnData2 = tickerLoad(top2Stocks[1], lookBackPeriod)
+            returnData = returnData1 + returnData2
+            #print("returnData1 is" + str(returnData1) + str(type(returnData1)))
+            #print("returnData2 is" + str(returnData2) + str(type(returnData2)))
+            df1 = equityCurveDf(returnData[0], data[0])
+            df2 = equityCurveDf(returnData[1], data[1])
+            #plt.plot(df1[list(data[0].values())[0]])
+            #plt.plot(df2[list(data[1].values())[0]])
+            print("df2 is" + str(df2) + str(type(df2)))
+            #----------------------------------------------------------------------
+
+            #----------------FOR DRAWDOWN CHARTS -------------------------------------
+            stock1_drawdowns = drawdownChart(returnData1[0]['Expected Return'])
+            stock2_drawdowns = drawdownChart(returnData2[0]['Expected Return'])
+            #print("drawdowns is" + str(stock1_drawdowns) + str(type(stock1_drawdowns)))
+            #-------------------------------------------------------------------------
 
             periods = [3, 5, 15, 30, 90, 180, 365]
-            fig = plt.figure(figsize=(21, 12))
-            gs = fig.add_gridspec(6, 10)
-            minPlot = fig.add_subplot(gs[:2, :4])
-            ax0 = fig.add_subplot(gs[:2, 4:])
-            ax1 = fig.add_subplot(gs[2:4, :5])
-            ax2 = fig.add_subplot(gs[2:4, 5:])
-            ax3 = fig.add_subplot(gs[4:,:5])
-            ax4 = fig.add_subplot(gs[4:, 5:])
+            fig = plt.figure(figsize=(26, 12))
+            gs = fig.add_gridspec(14, 20)
+            minPlot = fig.add_subplot(gs[:3, :7])
+            ax0 = fig.add_subplot(gs[:3, 8:])
+            ax1 = fig.add_subplot(gs[4:6, :9])
+            ax2 = fig.add_subplot(gs[4  :6, 11:])
+            ax3 = fig.add_subplot(gs[7:10,:9])
+            ax4 = fig.add_subplot(gs[7:10, 11:])
+            ax5 = fig.add_subplot(gs[11:,:9])
+            ax6 = fig.add_subplot(gs[11:,11:])
 
 
             for q in range(len(stockCombinations)):
@@ -284,7 +307,7 @@ def stockInput():
             ax1.set_xticklabels([f'{k}-Day Mean' 
                 if type(k) is int else 'Simulation Lifespan' for 
                 k in perf_dict['ann_ret'].keys()],
-                rotation=45)
+                rotation=20)
             ax1.grid()
             ax1.set_ylabel('Returns (%)')
             ax1.set_xlabel('Strategy')
@@ -297,7 +320,7 @@ def stockInput():
             ax2.set_xticklabels([f'{k}-Day Mean' 
                 if type(k) is int else 'Simulation Lifespan' for 
                 k in perf_dict['sharpe'].keys()],
-                rotation=45)
+                rotation=20)
             ax2.grid()
             ax2.set_ylabel('Sharpe Ratio')
             ax2.set_xlabel('Strategy')
@@ -389,6 +412,25 @@ def stockInput():
                 coorText.append('('+coorIndex + ',' + coorY + ')')
                 ax4.annotate(coorText[l], (intersectCoor.index[l], dataLog[1]['SMA120'].values[idx20][l]), fontsize=9)
 
+            ax5.set_title('Fig 7. Equity Curve of '+ str(percentageDict[sharpeDict[maxRatio]]) + " Lookback Period: " + str(lookBackPeriod))
+            ax5.set_xlabel('Date')
+            ax5.set_ylabel('Percentage of Stocks')
+            ax5.grid()
+            ax5.plot(df1['Equity Curve'], label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[0]))
+            ax5.plot(df2['Equity Curve'], label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[1]))
+            ax5.legend()
+
+            max_drawdown1 = stock1_drawdowns['Drawdown'].min()
+            max_drawdown2 = stock2_drawdowns['Drawdown'].min()
+
+            ax6.set_title('Fig 8. Drawdown Chart')
+            ax6.plot(stock1_drawdowns, label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[0]) + ' Max: '+str(max_drawdown1)[0:5])
+            ax6.plot(stock2_drawdowns, label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[1])+ ' Max: '+str(max_drawdown2)[0:5])
+            ax6.set_xlabel('Date')
+            ax6.set_ylabel('Drawdown Percentage')
+            ax6.grid()
+            ax6.legend()
+            #ax6.plot(df2['Equity Curve'])
             plt.tight_layout()
             #plt.show()
 
