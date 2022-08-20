@@ -6,7 +6,6 @@ import math
 import matplotlib.pyplot as plt
 from scipy import optimize
 from flask import Flask, request, jsonify, render_template, send_file
-import dataframe_image as dfi
 
 from sympy.solvers import solve
 import sympy
