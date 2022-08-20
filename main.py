@@ -1,10 +1,12 @@
 # Description: A practice on building an efficeint frontier for two and three assets.
 import pandas as pd
+from pandas.plotting import table 
 import numpy as np
 import math
 import matplotlib.pyplot as plt
 from scipy import optimize
 from flask import Flask, request, jsonify, render_template, send_file
+import dataframe_image as dfi
 
 from sympy.solvers import solve
 import sympy
@@ -25,6 +27,7 @@ from TSM import getTicker, logReturnList, newTSMAlgo
 from SMA import SMA, SMAstrategy
 from ranking import lookBackRank
 from equityChart import equityCurveDf, tickerLoad, drawdownChart
+from monthlyDate import monthlyIterator
 
 #--- FLASK WEBFRAME ------
 app = Flask(__name__)
@@ -45,8 +48,9 @@ def stockInput():
         resetState = request.form.get('resetState')
         addStockState = request.form.get('addStockState')
         addPeriodState = request.form.get('addPeriodState')
-        
 
+        dataState = request.form.get('dataState')
+   
         if None in stockListed:
             stockListed.remove(None)
 
@@ -202,6 +206,7 @@ def stockInput():
 
             dataList = []
             dataLog = getTicker(finalStockList, dataList)
+            print("dataLog is" + str(dataLog) + str(type(dataLog)))
 
             returnList = []
             returns = logReturnList(dataLog, returnList)[0]
@@ -240,6 +245,7 @@ def stockInput():
             print("data is" + str(data) + str(type(data)))
             #-------------------------------- FOR EQUITY CHART ----------------- Might have to delete
             top2Stocks = lookBackRank(stockList, lookBackPeriod)[1]
+            print("top2Stocks is" + str(top2Stocks) + str(type(data)))
             returnData1 = tickerLoad(top2Stocks, lookBackPeriod)
             returnData2 = tickerLoad(top2Stocks[1], lookBackPeriod)
             returnData = returnData1 + returnData2
@@ -257,8 +263,40 @@ def stockInput():
             stock2_drawdowns = drawdownChart(returnData2[0]['Expected Return'])
             #print("drawdowns is" + str(stock1_drawdowns) + str(type(stock1_drawdowns)))
             #-------------------------------------------------------------------------
+            #--------------------FOR TABLE DATAFRAME DISPLAY ------------------------------
+            table1 = monthlyIterator(top2Stocks)[0]
+            table2 = monthlyIterator(top2Stocks)[1]
 
-            periods = [3, 5, 15, 30, 90, 180, 365]
+            tableHTML1 = table1.to_html()
+            tableHTML2 = table2.to_html()
+
+            #print(tableHTML1)
+
+            text_file1 = open("templates/index1.html", "w")
+            text_file1.write("""<a href="/">Hub</a>
+            <a href="data1">Data 1</a>
+            <a href="data2">Data 2 </a>""")
+            text_file1.write(str(percentageDict[sharpeDict[maxRatio]].split(' | ')[0]))
+            text_file1.write(tableHTML1)
+            text_file1.close()
+
+            text_file2 = open("templates/index2.html", "w")
+            text_file2.write("""<a href="/">Hub</a>
+            <a href="data1">Data 1</a>
+            <a href="data2">Data 2 </a>""")
+            text_file2.write(str(percentageDict[sharpeDict[maxRatio]].split(' | ')[1]))
+            text_file2.write(tableHTML2)
+            text_file2.close()
+
+            # if dataState == '1':
+            #     return render_template('home.html', tables=[tableHTML1, tableHTML2],titles = top2Stocks)
+                
+
+            # print("TableHTML1 = " + str(tableHTML1))
+            # print("TableHTML2 = " + str(tableHTML2))
+            #---------------------------------------------------------------------------
+
+            periods = [3, 5, 15, 30, 909, 180, 365]
             fig = plt.figure(figsize=(26, 12))
             gs = fig.add_gridspec(14, 20)
             minPlot = fig.add_subplot(gs[:3, :7])
@@ -332,6 +370,8 @@ def stockInput():
 
             ann_retDict = perf_dict['ann_ret'].copy()
             sharpe_Dict = perf_dict['sharpe'].copy()
+
+            # print('ann_retDict: '+str(ann_retDict))
 
             del ann_retDict['buy_and_hold']
             del sharpe_Dict['buy_and_hold']
@@ -416,20 +456,20 @@ def stockInput():
             ax5.set_xlabel('Date')
             ax5.set_ylabel('Percentage of Stocks')
             ax5.grid()
-            ax5.plot(df1['Equity Curve'], label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[0]))
-            ax5.plot(df2['Equity Curve'], label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[1]))
-            ax5.legend()
+            ax5.plot(df1['Equity Curve']+df2['Equity Curve'], label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[0]))
+            #ax5.plot(df2['Equity Curve'], label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[1]))
+            #ax5.legend()
 
             max_drawdown1 = stock1_drawdowns['Drawdown'].min()
             max_drawdown2 = stock2_drawdowns['Drawdown'].min()
 
             ax6.set_title('Fig 8. Drawdown Chart')
-            ax6.plot(stock1_drawdowns, label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[0]) + ' Max: '+str(max_drawdown1)[0:5])
-            ax6.plot(stock2_drawdowns, label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[1])+ ' Max: '+str(max_drawdown2)[0:5])
+            ax6.plot(stock1_drawdowns + stock2_drawdowns, label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[0]) + ' Max: '+str(max_drawdown1)[0:5])
+            #ax6.plot(stock2_drawdowns, label=str(percentageDict[sharpeDict[maxRatio]].split(' | ')[1])+ ' Max: '+str(max_drawdown2)[0:5])
             ax6.set_xlabel('Date')
             ax6.set_ylabel('Drawdown Percentage')
             ax6.grid()
-            ax6.legend()
+            #ax6.legend()
             #ax6.plot(df2['Equity Curve'])
             plt.tight_layout()
             #plt.show()
@@ -445,6 +485,13 @@ def stockInput():
             resetState = '0'
     return render_template("home.html", lookBackPeriod=lookBackPeriod, topStocks=topStocks)
 
+@app.route('/data1')
+def data1():
+    return render_template("index1.html")
+
+@app.route('/data2')
+def data2():
+    return render_template("index2.html")
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support
     app.run(threaded=True, port=5000)
