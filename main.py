@@ -272,7 +272,7 @@ def stockInput():
             #print(tableHTML1)
 
             text_file1 = open("templates/index1.html", "w")
-            text_file1.write("""<a href="/">Hub</a>
+            text_file1.write("""<a href="/">Home</a>
             <a href="data1">Data 1</a>
             <a href="data2">Data 2 </a>""")
             text_file1.write(str(percentageDict[sharpeDict[maxRatio]].split(' | ')[0]))
@@ -280,7 +280,7 @@ def stockInput():
             text_file1.close()
 
             text_file2 = open("templates/index2.html", "w")
-            text_file2.write("""<a href="/">Hub</a>
+            text_file2.write("""<a href="/">Home</a>
             <a href="data1">Data 1</a>
             <a href="data2">Data 2 </a>""")
             text_file2.write(str(percentageDict[sharpeDict[maxRatio]].split(' | ')[1]))
